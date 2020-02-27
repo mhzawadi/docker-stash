@@ -1,0 +1,35 @@
+version: '3.5'
+
+# docker stack deploy --compose-file stack-unifi.yml unifi
+
+networks:
+  pi_network:
+    external: true
+
+volumes:
+  unifi_config:
+  unifi_log:
+  unifi_log2:
+  unifi_run:
+  unifi_run2:
+  unifi_work:
+
+services:
+  unifi:
+    image: ryansch/unifi-rpi:latest
+    networks:
+      - pi_network
+    volumes:
+      # Unifi v5.0.7 creates all of these directories (some remain empty)
+      - unifi_config:/var/lib/unifi
+      - unifi_log:/usr/lib/unifi/logs
+      - unifi_log2:/var/log/unifi
+      - unifi_run:/usr/lib/unifi/run
+      - unifi_run2:/run/unifi
+      - unifi_work:/usr/lib/unifi/work
+    ports:
+      - "8080:8080"     # The HTTP port
+      - "8081:8081"     # The HTTP port
+      - "8443:8443"     # The HTTP port
+      - "8843:8843"     # The HTTP port
+      - "8880:8880"     # The HTTP port

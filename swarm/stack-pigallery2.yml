@@ -1,0 +1,40 @@
+version: '3.5'
+
+# docker stack deploy --compose-file stack-pigallery2.yml pigallery2
+
+networks:
+  proxy_pi_network:
+    external: true
+
+volumes:
+  pigallery2_data:
+  pigallery2_config:
+  pigallery2_tmp:
+  pigallery2_images:
+
+services:
+  pigallery2:
+    image: bpatrik/pigallery2:1.8.0
+    networks:
+      - proxy_pi_network
+    volumes:
+      - pigallery2_config:/app/data/config
+      - pigallery2_data:/app/data/db
+      - pigallery2_images:/app/data/images
+      - pigallery2_tmp:/app/data/tmp
+    command:
+      - "--Server-Database-mysql-host=mysql"
+      - "--Server-Database-mysql-username=pigallery2"
+      - "--Server-Database-mysql-password=zuXedYa6y35o26"
+      - "--Server-Database-mysql-database=pigallery2"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == worker
+      labels:
+        - "traefik.http.routers.pigallery2.rule=Host(`pigallery2.mydomain.com`)"
+        - "traefik.http.routers.pigallery2.service=pigallery2"
+        - "traefik.http.services.pigallery2.loadbalancer.server.port=80"

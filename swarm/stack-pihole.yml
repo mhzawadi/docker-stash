@@ -1,0 +1,45 @@
+version: '3.5'
+
+# docker stack deploy --compose-file stack-pihole.yml pihole
+
+networks:
+  proxy_pi_network:
+    external: true
+
+volumes:
+  pihole:
+  dnsmasq:
+
+services:
+  pihole:
+    image: pihole/pihole:latest
+    networks:
+      - proxy_pi_network
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp"
+      - "81:80/tcp"
+      # - "443:443/tcp"
+    environment:
+      TZ: 'Europe/London'
+      WEBPASSWORD: 'yAYru8qR'
+      DNS1: '127.0.0.1'
+      DNS2: '1.1.1.1'
+    # Volumes store your data between container upgrades
+    volumes:
+       - pihole:/etc/pihole/
+       - dnsmasq:/etc/dnsmasq.d/
+    # Recommended but not required (DHCP needs NET_ADMIN)
+    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    # cap_add:
+    #   - NET_ADMIN
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.docker.network=proxy_pi_network"
+        - "traefik.http.routers.pihole.rule=Host(`dns.mydomain.com`)"
+        - "traefik.http.routers.pihole.service=pihole"
+        - "traefik.http.services.pihole.loadbalancer.server.port=80"

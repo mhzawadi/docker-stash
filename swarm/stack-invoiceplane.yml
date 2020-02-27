@@ -1,0 +1,48 @@
+version: '3.5'
+
+# docker stack deploy --compose-file stack-invoiceplane.yml invoiceplane
+
+networks:
+  proxy_pi_network:
+    external: true
+
+volumes:
+  invoiceplane_data:
+
+configs:
+  invoiceplane:
+    external: true
+
+services:
+  invoiceplane:
+    image: mhzawadi/invoiceplane:v1.5.9.1
+    networks:
+      - proxy_pi_network
+    volumes:
+      - invoiceplane_data:/var/www/html/uploads
+    environment:
+      - TZ=Europe/London
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=InvoicePlane
+      - MYSQL_PASSWORD=WHF8KSeHzVSfXv
+      - MYSQL_DB=InvoicePlane
+      - HOST_URL=ip.mydomain.com
+      - IP_URL=https://ip.mydomain.com
+      - DISABLE_SETUP=true
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == worker
+      labels:
+        - "traefik.http.routers.invoiceplane.rule=Host(`ip.mydomain.com`)"
+        - "traefik.http.routers.invoiceplane.service=invoiceplane"
+        - "traefik.http.services.invoiceplane.loadbalancer.server.port=80"
+    configs:
+      - source: invoiceplane
+        target: /var/www/html/ipconfig.php
+        uid: "0"
+        gid: "0"
+        mode: 0444

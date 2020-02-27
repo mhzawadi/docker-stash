@@ -1,0 +1,30 @@
+version: '3.5'
+
+# docker stack deploy --compose-file stack-gogs.yml gogs
+
+networks:
+  proxy_pi_network:
+    external: true
+
+volumes:
+  gogs_data:
+
+services:
+  gogs:
+    image: gogs/gogs-rpi
+    networks:
+      - proxy_pi_network
+    ports:
+      - "82:3000"
+      - "2250:22"
+    volumes:
+      - gogs_data:/data
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.docker.network=proxy_pi_network"
+        - "traefik.http.routers.gogo.rule=Host(`gogs.mydomain.com`)"
+        - "traefik.http.routers.gogo.service=gogo"
+        - "traefik.http.services.gogo.loadbalancer.server.port=3000"
