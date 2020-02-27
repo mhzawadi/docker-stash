@@ -1,0 +1,70 @@
+# docker-compose.yml
+version: '3'
+
+# docker-compose -p bitwarden -f pihole-bitwarden_rs.yml
+
+volumes:
+  pihole:
+  dnsmasq:
+  portainer_data:
+
+services:
+  portainer:
+    image: portainer/portainer
+    command: -H unix:///var/run/docker.sock
+    restart: always
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+
+  bitwarden:
+   image: bitwardenrs/server:raspberry
+   restart: always
+   volumes:
+     - ./bwdata:/data
+     - ./ssl:/ssl
+   ports:
+     - 80:80
+   environment:
+     - SIGNUPS_ALLOWED=true
+     - SIGNUPS_DOMAINS_WHITELIST=mydomain.com
+     - SMTP_HOST=smtp
+     - SMTP_PORT=25
+     - SMTP_SSL=false
+     - SMTP_FROM=bitwarden@mydomain.com
+     - ADMIN_TOKEN=this-should-be-very-secure
+  smtp:
+    image: mhzawadi/postfix:v0.0.1
+    restart: always
+    environment:
+
+  backup:
+    image: bruceforce/bw_backup
+    restart: always
+    volumes:
+      - ./bwdata:/data
+    environment:
+      - CRON_TIME=5 3 * * *
+      - TIMESTAMP=true
+      - BACKUP_FILE=/data/backup.sqlite3
+      - UID=0
+  pihole:
+    image: pihole/pihole:latest
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp"
+      - "81:80/tcp"
+      # - "443:443/tcp"
+    environment:
+      TZ: 'Europe/London'
+      WEBPASSWORD: 'ChangeMe'
+    # Volumes store your data between container upgrades
+    volumes:
+       - pihole:/etc/pihole/
+       - dnsmasq:/etc/dnsmasq.d/
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
