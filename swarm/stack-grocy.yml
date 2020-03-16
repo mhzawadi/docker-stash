@@ -2,16 +2,25 @@ version: '3.5'
 
 # docker stack deploy --compose-file stack-grocy.yml grocy
 
+networks:
+  proxy_pi_network:
+    external: true
+
 volumes:
   grocy:
 
 services:
   grocy:
     image: mhzawadi/grocy:v2.6.1.1
+    networks:
+      - proxy_pi_network
     deploy:
       replicas: 1
       restart_policy:
         condition: on-failure
+      placement:
+        constraints:
+          - node.role == worker
       labels:
         - "traefik.http.routers.grocy.rule=Host(`grocy.mydomain.com`)"
         - "traefik.http.routers.grocy.service=grocy"
