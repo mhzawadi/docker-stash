@@ -1,8 +1,13 @@
 # docker-stash
 A stash of docker compose and stacks
 
-This repo has 2 types of compse, the first is standalone docker-compse.
-The second is a stack to run on docker swarm, all thr stacks have a line you can use to run them.
+This repo has 2 types of compose, the first is standalone docker-compose.
+The second is a stack to run on docker swarm, all the stacks have a line you can use to run them.
+
+## Nginx
+
+In the nginx folder is the config that will allow you to run all the stacks,
+the nginx config does SSL/TLS off loading so the connection to service's is over HTTP.
 
 ### Conventions
 

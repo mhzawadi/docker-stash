@@ -1,0 +1,38 @@
+version: '3.5'
+
+# docker stack deploy --compose-file stack-grocy.yml grocy
+
+volumes:
+  grocy:
+
+services:
+  grocy:
+    image: mhzawadi/grocy:v2.6.1.1
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.http.routers.grocy.rule=Host(`grocy.mydomain.com`)"
+        - "traefik.http.routers.grocy.service=grocy"
+        - "traefik.http.services.grocy.loadbalancer.server.port=80"
+        - "traefik.http.routers.grocy.middlewares=grocy"
+        - "traefik.http.middlewares.grocy.headers.customrequestheaders.X-Forwarded-Proto=https"
+    volumes:
+      - grocy:/var/www/html/data
+  backup:
+    image: bruceforce/bw_backup
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == worker
+    volumes:
+      - grocy:/data
+    environment:
+      - CRON_TIME=5 * * * *
+      - TIMESTAMP=true
+      - BACKUP_FILE=/data/backup.sqlite3
+      - UID=0
