@@ -3,7 +3,7 @@ version: '3.5'
 # docker stack deploy --compose-file stack-jukebox.yml jukebox
 
 networks:
-  proxy_pi_network:
+  proxy_jukebox:
     external: true
 
 # volumes:
@@ -12,7 +12,7 @@ services:
   jukebox:
     image: mhzawadi/subsonic_jukebox:v0.0.7
     networks:
-      - proxy_pi_network
+      - proxy_jukebox
     environment:
       - SUB_URL=https://jukebox.mydomain.com
       - SUB_ADDR=https://subsonic.mydomain.com

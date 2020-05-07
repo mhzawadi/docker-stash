@@ -3,7 +3,7 @@ version: '3.5'
 # docker stack deploy --compose-file stack-pigallery2.yml pigallery2
 
 networks:
-  proxy_pi_network:
+  proxy_pigallery2:
     external: true
 
 volumes:
@@ -16,7 +16,7 @@ services:
   pigallery2:
     image: bpatrik/pigallery2:1.8.0
     networks:
-      - proxy_pi_network
+      - proxy_pigallery2
     volumes:
       - pigallery2_config:/app/data/config
       - pigallery2_data:/app/data/db

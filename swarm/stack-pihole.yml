@@ -3,7 +3,7 @@ version: '3.5'
 # docker stack deploy --compose-file stack-pihole.yml pihole
 
 networks:
-  proxy_pi_network:
+  proxy_pihole:
     external: true
 
 volumes:
@@ -14,7 +14,7 @@ services:
   pihole:
     image: pihole/pihole:latest
     networks:
-      - proxy_pi_network
+      - proxy_pihole
     ports:
       - "53:53/tcp"
       - "53:53/udp"
@@ -39,7 +39,7 @@ services:
       restart_policy:
         condition: on-failure
       labels:
-        - "traefik.docker.network=proxy_pi_network"
+        - "traefik.docker.network=proxy_pihole"
         - "traefik.http.routers.pihole.rule=Host(`dns.mydomain.com`)"
         - "traefik.http.routers.pihole.service=pihole"
         - "traefik.http.services.pihole.loadbalancer.server.port=80"

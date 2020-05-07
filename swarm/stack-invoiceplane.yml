@@ -3,7 +3,7 @@ version: '3.5'
 # docker stack deploy --compose-file stack-invoiceplane.yml invoiceplane
 
 networks:
-  proxy_pi_network:
+  proxy_invoiceplane:
     external: true
 
 volumes:
@@ -17,7 +17,7 @@ services:
   invoiceplane:
     image: mhzawadi/invoiceplane:v1.5.9.1
     networks:
-      - proxy_pi_network
+      - proxy_invoiceplane
     volumes:
       - invoiceplane_data:/var/www/html/uploads
     environment:

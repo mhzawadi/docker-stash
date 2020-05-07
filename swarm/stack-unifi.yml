@@ -3,7 +3,7 @@ version: '3.5'
 # docker stack deploy --compose-file stack-unifi.yml unifi
 
 networks:
-  pi_network:
+  proxy_unifi:
     external: true
 
 volumes:
@@ -18,7 +18,7 @@ services:
   unifi:
     image: ryansch/unifi-rpi:latest
     networks:
-      - pi_network
+      - proxy_unifi
     volumes:
       # Unifi v5.0.7 creates all of these directories (some remain empty)
       - unifi_config:/var/lib/unifi

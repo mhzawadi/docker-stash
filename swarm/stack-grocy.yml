@@ -3,7 +3,7 @@ version: '3.5'
 # docker stack deploy --compose-file stack-grocy.yml grocy
 
 networks:
-  proxy_pi_network:
+  proxy_grocy:
     external: true
 
 volumes:
@@ -13,7 +13,7 @@ services:
   grocy:
     image: mhzawadi/grocy:v2.6.1.1
     networks:
-      - proxy_pi_network
+      - proxy_grocy
     deploy:
       replicas: 1
       restart_policy:

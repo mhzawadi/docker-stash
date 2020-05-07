@@ -3,7 +3,7 @@ version: '3.5'
 # docker stack deploy --compose-file stack-phpipam.yml phpipam
 
 networks:
-  proxy_pi_network:
+  proxy_phpipam:
     external: true
 
 # volumes:
@@ -12,7 +12,7 @@ services:
   phpipam:
     image: mhzawadi/phpipam:v1.4.0.3
     networks:
-      - proxy_pi_network
+      - proxy_phpipam
     environment:
       - TZ=Europe/London
       - MYSQL_HOST=mysql

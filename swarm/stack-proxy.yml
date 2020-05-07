@@ -3,23 +3,35 @@ version: '3.5'
 # docker stack deploy --compose-file stack-proxy.yml proxy
 
 networks:
-  pi_network:
-  drone_runner:
-    external: true
-
-volumes:
-  mariadb_10_4:
+  authelia:
+  dashmachine:
+  gogs:
+  invoiceplane:
+  jukebox:
+  phpipam:
+  phpmyadmin:
+  pihole:
+  pigallery2:
+  unifi:
 
 services:
-  proxyv2:
-    image: traefik:v2.0 # The official Traefik docker image
+  proxyv22:
+    image: traefik:v2.2 # The official Traefik docker image
     command:
       - "--api.insecure=true"
       - "--providers.docker"
       - "--providers.docker.swarmMode=true"
     networks:
-      - pi_network
-      - drone_runner
+      - authelia
+      - dashmachine
+      - gogs
+      - invoiceplane
+      - jukebox
+      - phpipam
+      - phpmyadmin
+      - pihole
+      - pigallery2
+      - unifi
     ports:
       - "80:80"     # The HTTP port
       - "443:443"   # The HTTP port
