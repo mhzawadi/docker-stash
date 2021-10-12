@@ -1,0 +1,48 @@
+version: '3.5'
+
+# docker stack deploy --compose-file stack-keycloak.yml keycloak
+
+# networks:
+
+secrets:
+  keyclock_db_password:
+    external: true
+  keyclock_password:
+    external: true
+
+# volumes:
+
+services:
+  keycloak:
+    image: alemairebe/keycloak
+    secrets:
+       - keyclock_db_password
+       - keyclock_password
+    ports:
+      - "8081:8080"     # The HTTP port
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD_FILE=/run/secrets/keyclock_password
+      - DB_VENDOR=mariadb
+      - DB_ADDR=192.168.1.1
+      - DB_DATABASE=keycloak
+      - DB_USER=keycloak
+      - DB_PASSWORD_FILE=/run/secrets/keyclock_db_password
+      - PROXY_ADDRESS_FORWARDING=true
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == worker]
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.docker.network=proxy_keycloak"
+        - "traefik.http.routers.keycloak.rule=Host(`keycloak.example.com`)"
+        - "traefik.http.routers.keycloak.service=keycloak"
+        - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
+        - "traefik.http.middlewares.keycloak.headers.SSLProxyHeaders.proto=X-Forwarded-Proto:https"
+        - "traefik.http.middlewares.keycloak.headers.customrequestheaders.http-x-forwarded-proto=https"
+        - 'traefik.http.middlewares.keycloak_auth.forwardauth.address=http://keycloak:8080'
+        - 'traefik.http.middlewares.keycloak_auth.forwardauth.trustForwardHeader=true'
+        - "traefik.http.routers.keycloak.middlewares=keycloak"
+        - "traefik.http.routers.keycloak.middlewares=keycloak_auth"

@@ -2,32 +2,32 @@ version: '3.5'
 
 # docker stack deploy --compose-file stack-phpipam.yml phpipam
 
-networks:
-  proxy_phpipam:
-    external: true
+# networks:
 
 # volumes:
 
 services:
   phpipam:
-    image: mhzawadi/phpipam:v1.4.0.3
+    image: mhzawadi/phpipam
     networks:
       - proxy_phpipam
     environment:
       - TZ=Europe/London
-      - MYSQL_HOST=mysql
+      - MYSQL_HOST=192.168.1.1
       - MYSQL_USER=phpipam
       - MYSQL_PASSWORD=phpipamadmin
       - MYSQL_DB=phpipam
-      - HOST_URL=ipam.mydomain.com
+      - HOST_URL=ipam.example.com
     deploy:
       replicas: 1
       restart_policy:
         condition: on-failure
       placement:
-        constraints:
-          - node.labels.arch==arm64v8
+        constraints: [node.role == worker]
       labels:
-        - "traefik.http.routers.ipam.rule=Host(`ipam.mydomain.com`)"
+        - "traefik.http.routers.ipam.rule=Host(`ipam.example.com`)"
         - "traefik.http.routers.ipam.service=ipam"
         - "traefik.http.services.ipam.loadbalancer.server.port=80"
+        - "traefik.http.middlewares.ipam.headers.SSLProxyHeaders.proto=X-Forwarded-Proto:https"
+        - "traefik.http.middlewares.ipam.headers.customrequestheaders.http-x-forwarded-proto=https"
+        - "traefik.http.routers.ipam.middlewares=ipam"

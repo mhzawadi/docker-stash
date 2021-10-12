@@ -1,0 +1,29 @@
+version: '3.5'
+
+# docker stack deploy --compose-file stack-vs-code.yml vscode-server
+
+# networks:
+
+volumes:
+  vscode_data:
+
+services:
+  vsc-matt:
+    image: codercom/code-server:latest
+    environment:
+      - TZ=Europe/London
+      - PASSWORD=password #optional
+      - SUDO_PASSWORD=password #optional
+      - DOCKER_USER=matt
+    volumes:
+      - vscode_data:/home/coder
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == worker]
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.http.routers.vsc.rule=Host(`vsc.example.com`)"
+        - "traefik.http.routers.vsc.service=vsc"
+        - "traefik.http.services.vsc.loadbalancer.server.port=8080"

@@ -1,0 +1,27 @@
+version: '3.5'
+
+# docker stack deploy --compose-file stack-gogs.yml gogs
+
+# networks:
+
+volumes:
+  mealie_data:
+
+services:
+  mealie:
+    image: hkotel/mealie:latest
+    volumes:
+      - mealie_data:/app/data
+    environment:
+      DB_TYPE: sqlite
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == worker]
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.docker.network=proxy_mealie"
+        - "traefik.http.routers.mealie.rule=Host(`mealie.example.com`)"
+        - "traefik.http.routers.mealie.service=mealie"
+        - "traefik.http.services.mealie.loadbalancer.server.port=80"

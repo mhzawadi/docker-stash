@@ -1,0 +1,22 @@
+# docker stack deploy --compose-file stack-dashmachine.yml dashmachine
+version: '3'
+
+volumes:
+  dashmachine:
+
+services:
+    dashmachine:
+      image: supermamon/rpi-dashmachine
+      volumes:
+        - dashmachine:/dashmachine/dashmachine/user_data
+      deploy:
+        replicas: 1
+        placement:
+          constraints: [node.role == worker]
+        restart_policy:
+          condition: on-failure
+        labels:
+          - "traefik.docker.network=proxy_pi_network"
+          - "traefik.http.routers.dashmachine.rule=Host(`dash.example.com`)"
+          - "traefik.http.routers.dashmachine.service=dashmachine"
+          - "traefik.http.services.dashmachine.loadbalancer.server.port=5000"

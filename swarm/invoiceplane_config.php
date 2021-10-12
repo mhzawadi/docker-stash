@@ -20,7 +20,7 @@ REMOVE_INDEXPHP=false
 # These database settings are set during the initial setup
 DB_HOSTNAME=mysql
 DB_USERNAME=InvoicePlane
-DB_PASSWORD=WHF8KSeHzVSfXv
+DB_PASSWORD=password
 DB_DATABASE=InvoicePlane
 DB_PORT=
 

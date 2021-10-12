@@ -1,0 +1,6 @@
+users:
+  matt:
+    password: '{CRYPT}$6$rounds=656000$kpiHPPcSF4d$RRbArmbjuKFqdHxoOmwvCxXHbbHg7G8Y1ppNWuM80AdtzTwZ0VqsSJLIWkYAHLGTIu2J9Rc0zTlMopSwlNVyN0'
+    email: matt@example.com
+    groups:
+    - horwood

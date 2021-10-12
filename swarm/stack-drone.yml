@@ -1,6 +1,7 @@
-version: "3.5"
 
 # docker stack deploy --compose-file stack-drone.yml drone
+
+version: "3.5"
 
 networks:
   runner:
@@ -9,37 +10,41 @@ networks:
 
 services:
   server:
-    image: drone/drone:1.6.2
+    image: drone/drone:2
+    ports:
+      - 84:84
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - drone_var:/var/lib/drone/
       - drone_data:/data
     environment:
       - DRONE_AGENTS_ENABLED=true
-      - DRONE_GOGS_SERVER=https://gogs.mydomain.com
+      - DRONE_GITHUB_CLIENT_ID=https://gogs.example.com
       - DRONE_GIT_ALWAYS_AUTH=false
       - DRONE_TLS_AUTOCERT=false
       - DRONE_SERVER_PORT=:84
-      - DRONE_SERVER_HOST=drone.mydomain.com
+      - DRONE_SERVER_HOST=drone.example.com
       - DRONE_SERVER_PROTO=https
       - DRONE_RPC_SECRET=0B8B6FD20705B23B2767D7CC28B4A603367BFAC4
       - DRONE_RUNNER_NETWORKS=drone_runner
-      - DRONE_USER_CREATE=username:gogs,admin:true
+      - DRONE_USER_CREATE=username:mzawadi,admin:true
     deploy:
       mode: replicated
       replicas: 1
+      placement:
+        constraints: [node.role == manager]
       labels:
-          - "traefik.http.routers.drone.rule=Host(`drone.mydomain.com`)"
+          - "traefik.http.routers.drone.rule=Host(`drone.example.com`)"
           - "traefik.http.routers.drone.service=drone"
           - "traefik.http.services.drone.loadbalancer.server.port=84"
     networks:
       - runner
-  runner-docker:
+  runner-docker-amd64:
     image: drone/drone-runner-docker:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - DRONE_RPC_HOST=drone.mydomain.com
+      - DRONE_RPC_HOST=drone.example.com
       - DRONE_RPC_PROTO=https
       - DRONE_RPC_SECRET=0B8B6FD20705B23B2767D7CC28B4A603367BFAC4
       - DRONE_RUNNER_NAME=drone-runner-docker
@@ -53,6 +58,48 @@ services:
         - traefik.enable=false
     networks:
       - runner
+  runner-docker-arm:
+    image: drone/drone-runner-docker:linux-arm
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DRONE_RPC_HOST=drone.example.com
+      - DRONE_RPC_PROTO=https
+      - DRONE_RPC_SECRET=0B8B6FD20705B23B2767D7CC28B4A603367BFAC4
+      - DRONE_RUNNER_NAME=drone-runner-docker
+      - DRONE_UI_USERNAME=test
+      - DRONE_UI_PASSWORD=test
+      - DRONE_RUNNER_NETWORKS=drone_runner
+      - DRONE_RUNNER_CAPACITY=1
+      - DOCKER_ARCH=arm
+    deploy:
+      mode: global
+      labels:
+        - traefik.enable=false
+    networks:
+      - runner
+  runner-docker-arm64:
+    image: drone/drone-runner-docker:linux-arm64
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DRONE_RPC_HOST=drone.example.com
+      - DRONE_RPC_PROTO=https
+      - DRONE_RPC_SECRET=0B8B6FD20705B23B2767D7CC28B4A603367BFAC4
+      - DRONE_RUNNER_NAME=drone-runner-docker
+      - DRONE_UI_USERNAME=test
+      - DRONE_UI_PASSWORD=test
+      - DRONE_RUNNER_NETWORKS=drone_runner
+      - DRONE_RUNNER_CAPACITY=1
+      - DOCKER_ARCH=arm64
+    deploy:
+      mode: global
+      labels:
+        - traefik.enable=false
+    networks:
+      - runner
 volumes:
   drone_var:
+    driver: local
   drone_data:
+    driver: local

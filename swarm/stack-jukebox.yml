@@ -2,31 +2,26 @@ version: '3.5'
 
 # docker stack deploy --compose-file stack-jukebox.yml jukebox
 
-networks:
-  proxy_jukebox:
-    external: true
+# networks:
 
 # volumes:
 
 services:
   jukebox:
-    image: mhzawadi/subsonic_jukebox:v0.0.7
-    networks:
-      - proxy_jukebox
+    image: mhzawadi/subsonic_jukebox
     environment:
-      - SUB_URL=https://jukebox.mydomain.com
-      - SUB_ADDR=https://subsonic.mydomain.com
-      - SUB_USER=user
-      - SUB_PASS=
-      - SUB_SALT=rDi5e8Z9JS
+      - SUB_URL=https://jukebox.example.com
+      - SUB_ADDR=http://192.168.49.208:4040
+      - SUB_USER=matt
+      - SUB_PASS=78a7b8b38d0bb5bd1bf78999c4e4d769
+      - SUB_SALT=8YI8D0qd
     deploy:
       replicas: 1
+      placement:
+        constraints: [node.role == worker]
       restart_policy:
         condition: on-failure
-      placement:
-        constraints:
-          - node.role == worker
       labels:
-        - "traefik.http.routers.jukebox.rule=Host(`jukebox.mydomain.com`)"
+        - "traefik.http.routers.jukebox.rule=Host(`jukebox.example.com`)"
         - "traefik.http.routers.jukebox.service=jukebox"
         - "traefik.http.services.jukebox.loadbalancer.server.port=80"

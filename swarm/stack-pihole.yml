@@ -8,24 +8,19 @@ networks:
 
 volumes:
   pihole:
+  pihole_slave:
   dnsmasq:
 
 services:
   pihole:
     image: pihole/pihole:latest
-    networks:
-      - proxy_pihole
     ports:
       - "53:53/tcp"
       - "53:53/udp"
       - "67:67/udp"
-      - "81:80/tcp"
-      # - "443:443/tcp"
     environment:
       TZ: 'Europe/London'
-      WEBPASSWORD: 'yAYru8qR'
-      DNS1: '127.0.0.1'
-      DNS2: '1.1.1.1'
+      WEBPASSWORD: 'password'
     # Volumes store your data between container upgrades
     volumes:
        - pihole:/etc/pihole/
@@ -36,10 +31,50 @@ services:
     #   - NET_ADMIN
     deploy:
       replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
       restart_policy:
-        condition: on-failure
+        condition: any
       labels:
         - "traefik.docker.network=proxy_pihole"
-        - "traefik.http.routers.pihole.rule=Host(`dns.mydomain.com`)"
+        - "traefik.http.routers.pihole.rule=Host(`dns1.example.com`)"
         - "traefik.http.routers.pihole.service=pihole"
         - "traefik.http.services.pihole.loadbalancer.server.port=80"
+  pihole_slave:
+    image: pihole/pihole:latest
+    networks:
+      - proxy_pihole
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp"
+    environment:
+      TZ: 'Europe/London'
+      WEBPASSWORD: 'password'
+    # Volumes store your data between container upgrades
+    volumes:
+       - pihole_slave:/etc/pihole/
+       - dnsmasq:/etc/dnsmasq.d/
+    # Recommended but not required (DHCP needs NET_ADMIN)
+    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    # cap_add:
+    #   - NET_ADMIN
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == worker]
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: any
+      labels:
+        - "traefik.docker.network=proxy_pihole"
+        - "traefik.http.routers.pihole_slave.rule=Host(`dns2.example.com`)"
+        - "traefik.http.routers.pihole_slave.service=pihole_slave"
+        - "traefik.http.services.pihole_slave.loadbalancer.server.port=80"

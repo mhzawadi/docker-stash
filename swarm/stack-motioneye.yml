@@ -1,0 +1,28 @@
+version: '3.5'
+
+# docker stack deploy --compose-file stack-motioneye.yml motioneye
+
+# networks:
+
+volumes:
+  motioneye_data:
+  motioneye_etc:
+
+services:
+  motioneye:
+    image: djaydev/motioneye:latest
+    volumes:
+      - motioneye_etc:/etc/motioneye
+      - motioneye_data:/var/lib/motioneye
+    environment:
+      - TZ="Europe/London"
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == worker]
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.http.routers.motioneye.rule=Host(`motioneye.example.com`)"
+        - "traefik.http.routers.motioneye.service=motioneye"
+        - "traefik.http.services.motioneye.loadbalancer.server.port=8765"

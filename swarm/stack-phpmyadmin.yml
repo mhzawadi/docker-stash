@@ -2,29 +2,28 @@ version: '3.5'
 
 # docker stack deploy --compose-file stack-phpmyadmin.yml phpmyadmin
 
-networks:
-  proxy_phpmyadmin:
-    external: true
+# networks:
 
 # volumes:
 
+configs:
+  config.inc.php:
+    external: true
+
 services:
   phpmyadmin:
-    image: mhzawadi/phpmyadmin:v5.0.1.3
-    networks:
-      - proxy_phpmyadmin
+    image: mhzawadi/phpmyadmin:dev
     volumes:
-      - ./config.inc.php:/etc/phpmyadmin/config.user.inc.php
+      - config.inc.php:/etc/phpmyadmin/config.user.inc.php
     environment:
-      - HOST_URL=mysql.mydomain.com
+      - HOST_URL=mysql.example.com
     deploy:
       replicas: 1
+      placement:
+        constraints: [node.role == worker]
       restart_policy:
         condition: on-failure
       labels:
-        - "traefik.http.routers.mysql.rule=Host(`mysql.mydomain.com`)"
+        - "traefik.http.routers.mysql.rule=Host(`mysql.example.com`)"
         - "traefik.http.routers.mysql.service=mysql"
         - "traefik.http.services.mysql.loadbalancer.server.port=80"
-      placement:
-        constraints:
-          - node.role == worker
