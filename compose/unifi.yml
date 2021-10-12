@@ -1,0 +1,62 @@
+version: '2'
+services:
+  unifi:
+    image: ryansch/unifi-rpi:6.2
+    container_name: unifi
+    restart: always
+    # network_mode: host
+    # Uncomment the following to set java options
+    # environment:
+    #   JAVA_OPTS: -Xmx512M
+    volumes:
+      # Unifi v5.0.7 creates all of these directories (some remain empty)
+      - unifi_config:/var/lib/unifi
+      - unifi_log:/usr/lib/unifi/logs
+      - unifi_log2:/var/log/unifi
+      - unifi_run:/usr/lib/unifi/run
+      - unifi_run2:/run/unifi
+      - unifi_work:/usr/lib/unifi/work
+    ports:
+      - "3478:3478/udp"     # The HTTP port
+      - "8080:8080"     # The HTTP port
+      - "8081:8081"     # The HTTP port
+      - "8443:8443"     # The HTTP port
+      - "8843:8843"     # The HTTP port
+      - "8880:8880"     # The HTTP port
+volumes:
+  unifi_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/lv_data/docker/unifi/config'
+  unifi_log:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/lv_data/docker/unifi/log'
+  unifi_log2:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/lv_data/docker/unifi/log2'
+  unifi_run:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/lv_data/docker/unifi/run'
+  unifi_run2:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/lv_data/docker/unifi/run2'
+  unifi_work:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/lv_data/docker/unifi/work'

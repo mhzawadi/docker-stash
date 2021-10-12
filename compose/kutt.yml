@@ -1,0 +1,55 @@
+version: "3"
+
+# networks:
+
+volumes:
+  redis_data:
+  postgres_data:
+
+services:
+  kutt:
+    image: kutt/kutt
+    depends_on:
+      - postgres
+      - redis
+    command: ["./wait-for-it.sh", "postgres:5432", "--", "npm", "start"]
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_NAME: kutt
+      DB_USER: user
+      DB_PASSWORD: pass
+      REDIS_HOST: redis
+    labels:
+      - "traefik.docker.network=proxy_kutt"
+      - "traefik.http.routers.kutt.rule=Host(`short.com`)"
+      - "traefik.http.routers.kutt.service=kutt"
+      - "traefik.http.services.kutt.loadbalancer.server.port=3000"
+
+  redis:
+    image: redis:6.0-alpine
+    volumes:
+      - redis_data:/data
+    labels:
+      - traefik.enable=false
+
+  postgres:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: kutt
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    labels:
+      - traefik.enable=false
+
+  smtp:
+    image: mhzawadi/postfix
+    restart: unless-stopped
+    labels:
+      - traefik.enable=false
+    environment:
+      - POSTFIX_DOMAIN=example.com
+      - POSTFIX_RELAYHOST=[smtp-relay.gmail.com]:25

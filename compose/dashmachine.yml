@@ -1,0 +1,20 @@
+---
+version: "3"
+
+# networks:
+
+services:
+  dashmachine:
+    image: rmountjoy/dashmachine0.7:latest
+    container_name: dashmachine
+    environment:
+      - TZ=Europe/London
+      - EDITOR_URL=https://vsc.example.com
+    volumes:
+      - /home/matt/git/dashmachine-config/config:/DashMachine/config
+    restart: unless-stopped
+    labels:
+      - "traefik.docker.network=proxy_dashmachine"
+      - "traefik.http.routers.dashmachine.rule=Host(`dash.example.com`)"
+      - "traefik.http.routers.dashmachine.service=dashmachine"
+      - "traefik.http.services.dashmachine.loadbalancer.server.port=5000"

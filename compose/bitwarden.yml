@@ -1,0 +1,52 @@
+# docker-compose.yml
+version: '3'
+
+# networks:
+
+volumes:
+  bitwarden_data:
+  bitwarden_ssl:
+
+services:
+  bitwarden:
+    image: vaultwarden/server
+    restart: unless-stopped
+    volumes:
+      - bitwarden_data:/data
+      - bitwarden_ssl:/ssl
+    environment:
+      - SIGNUPS_ALLOWED=true
+      - SIGNUPS_DOMAINS_WHITELIST=example.com
+      - SMTP_HOST=smtp
+      - SMTP_PORT=25
+      - SMTP_SSL=false
+      - SMTP_FROM=bitwarden@example.com
+      - ADMIN_TOKEN=GZTL4MO9maYcSsgbfuPwOz3xdpUjcbSJbTxDRxntTWiW60xpWyBuuqoHMDCKAeC4
+#     - DATABASE_URL=mysql://bitwarden:KX84fBJCTIp3lAHY@127.0.0.1:3306/bitwarden
+#     - ENABLE_DB_WAL=false
+    labels:
+      - "traefik.docker.network=proxy_bitwarden"
+      - "traefik.http.routers.bit.rule=Host(`bit.example.com`)"
+      - "traefik.http.routers.bit.service=bit"
+      - "traefik.http.services.bit.loadbalancer.server.port=80"
+  smtp:
+    image: mhzawadi/postfix:3.6.1.0
+    restart: unless-stopped
+    labels:
+      - traefik.enable=false
+    environment:
+      - POSTFIX_DOMAIN=example.com
+      - POSTFIX_RELAYHOST=[smtp-relay.gmail.com]:25
+
+  backup:
+    image: bruceforce/bw_backup
+    restart: unless-stopped
+    volumes:
+      - bitwarden_data:/data
+    environment:
+      - CRON_TIME=5 * * * *
+      - TIMESTAMP=true
+      - BACKUP_FILE=/data/backup.sqlite3
+      - UID=0
+    labels:
+      - traefik.enable=false

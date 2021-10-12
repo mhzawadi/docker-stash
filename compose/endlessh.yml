@@ -1,0 +1,11 @@
+# docker-compose.yml
+version: '3'
+
+services:
+  endlessh:
+    image: harshavardhanj/endlessh:latest
+    restart: always
+    hostname: endlessh
+    container_name: endlessh
+    ports:
+      - 22:2222

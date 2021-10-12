@@ -1,0 +1,25 @@
+---
+version: "3"
+
+# networks:
+
+services:
+  picocms:
+    image: mhzawadi/picocms
+    container_name: picoCMS
+    volumes:
+      - /var/data/websites/picocms/assets/:/var/www/html/assets
+      - /var/data/websites/picocms/config/:/var/www/html/config
+      - /var/data/websites/picocms/content/:/var/www/html/content
+      - /var/data/websites/picocms/plugins/:/var/www/html/plugins
+      - /var/data/websites/picocms/themes/:/var/www/html/themes
+    restart: unless-stopped
+    labels:
+      - "traefik.docker.network=proxy_picocms"
+      - "traefik.http.routers.picocms.rule=Host(`example.com`)"
+      - "traefik.http.routers.picocms.service=picocms"
+      - "traefik.http.services.picocms.loadbalancer.server.port=80"
+      - "traefik.http.routers.picocms.middlewares=picocms"
+      - "traefik.http.middlewares.picocms.headers.customRequestHeaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.picocms.headers.customRequestHeaders.X-Forwarded-Port=443"
+      - "traefik.http.middlewares.picocms.headers.customRequestHeaders.X-Forwarded-Host=pico.example.com"
