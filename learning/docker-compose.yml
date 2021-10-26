@@ -1,0 +1,12 @@
+version: '3'
+
+
+services:
+ whoami:
+   image: traefik/whoami
+   restart: always
+   hostname: iamfoo
+   container_name: iamfoo
+   ports:
+     - 8080:80
+

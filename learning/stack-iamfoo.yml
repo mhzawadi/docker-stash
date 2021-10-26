@@ -1,0 +1,14 @@
+version: '3'
+
+# docker stack deploy --compose-file stack-iamfoo.yml iamfoo 
+
+services:
+ iamfoo:
+   image: traefik/whoami
+   restart: always
+   ports:
+     - 8080:80
+   deploy:
+     replicas: 1
+     placement:
+       constraints: [node.platform.os == linux]
