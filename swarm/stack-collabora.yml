@@ -1,0 +1,41 @@
+version: '3.5'
+
+# docker stack deploy --compose-file stack-collabora.yml collabora
+
+configs:
+  coolwsd:
+    external: true
+
+# networks:
+
+# volumes:
+
+services:
+  collabora:
+    image: collabora/code
+    environment:
+      - "server_name=collabora.example.com"
+      - "username=collabora"
+      - "password=somestring"
+      - "aliasgroup1=https://owncloud.example.com"
+    configs:
+      - source: coolwsd
+        target: /etc/coolwsd/coolwsd.xml
+        uid: "104"
+        gid: "106"
+        mode: 0640
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.role == worker]
+      labels:
+        - "traefik.http.routers.collabora.rule=Host(`collabora.example.com`)"
+        - "traefik.http.routers.collabora.service=collabora"
+        - "traefik.http.services.collabora.loadbalancer.server.port=9980"
+        - "traefik.http.middlewares.collabora.headers.SSLProxyHeaders.proto=X-Forwarded-Proto:https"
+        - "traefik.http.middlewares.collabora.headers.customrequestheaders.x-forwarded-proto=https"
+        - "traefik.http.middlewares.collabora.headers.customrequestheaders.x-forwarded-port=443"
+        - "traefik.http.middlewares.collabora.headers.customrequestheaders.http-x-secure-request=true"
+        - "traefik.http.routers.collabora.middlewares=collabora"

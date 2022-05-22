@@ -36,7 +36,7 @@ services:
      - SMTP_FROM=bitwarden@mydomain.com
      - ADMIN_TOKEN=this-should-be-very-secure
   smtp:
-    image: mhzawadi/postfix:v0.0.1
+    image: mhzawadi/postfix
     restart: always
     environment:
 
@@ -60,7 +60,7 @@ services:
       # - "443:443/tcp"
     environment:
       TZ: 'Europe/London'
-      WEBPASSWORD: 'ChangeMe'
+      WEBPASSWORD: 'this-should-be-very-secure'
     # Volumes store your data between container upgrades
     volumes:
        - pihole:/etc/pihole/

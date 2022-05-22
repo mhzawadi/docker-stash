@@ -2,7 +2,9 @@ version: '3.5'
 
 # docker stack deploy --compose-file stack-keycloak.yml keycloak
 
-# networks:
+networks:
+  proxy_keycloak:
+    external: true
 
 secrets:
   keyclock_db_password:
@@ -14,7 +16,9 @@ secrets:
 
 services:
   keycloak:
-    image: alemairebe/keycloak
+    image: jboss/keycloak:16.1.1
+    networks:
+      - proxy_keycloak
     secrets:
        - keyclock_db_password
        - keyclock_password
@@ -24,20 +28,18 @@ services:
       - KEYCLOAK_USER=admin
       - KEYCLOAK_PASSWORD_FILE=/run/secrets/keyclock_password
       - DB_VENDOR=mariadb
-      - DB_ADDR=192.168.1.1
+      - DB_ADDR=192.168.50.105
       - DB_DATABASE=keycloak
       - DB_USER=keycloak
       - DB_PASSWORD_FILE=/run/secrets/keyclock_db_password
       - PROXY_ADDRESS_FORWARDING=true
     deploy:
       replicas: 1
-      placement:
-        constraints: [node.role == worker]
       restart_policy:
         condition: on-failure
       labels:
         - "traefik.docker.network=proxy_keycloak"
-        - "traefik.http.routers.keycloak.rule=Host(`keycloak.example.com`)"
+        - "traefik.http.routers.keycloak.rule=Host(`keycloak.horwood.biz`)"
         - "traefik.http.routers.keycloak.service=keycloak"
         - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
         - "traefik.http.middlewares.keycloak.headers.SSLProxyHeaders.proto=X-Forwarded-Proto:https"

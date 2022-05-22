@@ -6,12 +6,11 @@ version: '3.5'
 
 services:
   proxy:
-    image: traefik:v2.4 # The official Traefik docker image
+    image: traefik:v2.6 # The official Traefik docker image
     command:
       - "--api.insecure=true"
       - "--providers.docker"
       - "--providers.docker.swarmMode=true"
-      - "--pilot.token=0bd94db8-24f5-4d2a-9cbf-872749581d0a"
     ports:
       - "80:80"     # The HTTP port
       - "443:443"   # The HTTP port

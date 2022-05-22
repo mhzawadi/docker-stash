@@ -1,0 +1,127 @@
+version: '3.5'
+
+# docker stack deploy --compose-file stack-keycloak-proxy.yml keycloak
+
+# networks:
+
+# secrets:
+
+# volumes:
+
+services:
+  oauth2_proxy_dmarc:
+    image: quay.io/oauth2-proxy/oauth2-proxy:latest
+    command:
+      - '--standard-logging=true'
+      - '--auth-logging=true'
+      - '--request-logging=true'
+      - '--http-address=0.0.0.0:4180'
+      - '--cookie-secure=true'
+      - '--reverse-proxy=true'
+      - '--cookie-secret=somestring'
+      - '--cookie-name=oauth2_dmarc'
+      - '--cookie-domain=dmarc.example.com'
+      - '--whitelist-domain=.example.com'
+      - '--email-domain=example.com'
+      - '--provider=keycloak-oidc'
+      - '--client-id=dmarc'
+      - '--client-secret=somestring'
+      - '--redirect-url=https://dmarc.example.com/oauth2/callback'
+      - '--oidc-issuer-url=https://keycloak.example.com/auth/realms/PVE01'
+      - '--custom-sign-in-logo=https://owncloud.example.com/apps/theming/image/logo?v=25'
+    ports:
+      - "8082:4180"     # The HTTP port
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=false
+  oauth2_proxy_mysql:
+    image: quay.io/oauth2-proxy/oauth2-proxy:latest
+    command:
+      - '--standard-logging=true'
+      - '--auth-logging=true'
+      - '--request-logging=true'
+      - '--http-address=0.0.0.0:4180'
+      - '--cookie-secure=true'
+      - '--reverse-proxy=true'
+      - '--cookie-secret=somestring'
+      - '--cookie-name=oauth2_mysql'
+      - '--cookie-expire=8h0m0s'
+      - '--cookie-domain=mysql.example.com'
+      - '--whitelist-domain=.example.com'
+      - '--email-domain=example.com'
+      - '--provider=keycloak-oidc'
+      - '--client-id=mysql'
+      - '--client-secret=somestring'
+      - '--redirect-url=https://mysql.example.com/oauth2/callback'
+      - '--oidc-issuer-url=https://keycloak.example.com/auth/realms/PVE01'
+      - '--custom-sign-in-logo=https://owncloud.example.com/apps/theming/image/logo?v=25'
+    ports:
+      - "8083:4180"     # The HTTP port
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=false
+  oauth2_proxy_ipam:
+    image: quay.io/oauth2-proxy/oauth2-proxy:latest
+    command:
+      - '--standard-logging=true'
+      - '--auth-logging=true'
+      - '--request-logging=true'
+      - '--http-address=0.0.0.0:4180'
+      - '--cookie-secure=true'
+      - '--reverse-proxy=true'
+      - '--cookie-secret=somestring'
+      - '--cookie-name=oauth2_ipam'
+      - '--cookie-expire=8h0m0s'
+      - '--cookie-domain=ipam.example.com'
+      - '--whitelist-domain=.example.com'
+      - '--email-domain=example.com'
+      - '--provider=keycloak-oidc'
+      - '--client-id=ipam'
+      - '--client-secret=somestring'
+      - '--redirect-url=https://ipam.example.com/oauth2/callback'
+      - '--oidc-issuer-url=https://keycloak.example.com/auth/realms/PVE01'
+      - '--custom-sign-in-logo=https://owncloud.example.com/apps/theming/image/logo?v=25'
+    ports:
+      - "8084:4180"     # The HTTP port
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=false
+  oauth2_proxy_gogs:
+    image: quay.io/oauth2-proxy/oauth2-proxy:latest
+    command:
+      - '--standard-logging=true'
+      - '--auth-logging=true'
+      - '--request-logging=true'
+      - '--http-address=0.0.0.0:4180'
+      - '--cookie-secure=true'
+      - '--reverse-proxy=true'
+      - '--cookie-secret=somestring'
+      - '--cookie-name=oauth2_gogs'
+      - '--cookie-expire=8h0m0s'
+      - '--cookie-domain=gogs.example.com'
+      - '--whitelist-domain=.example.com'
+      - '--email-domain=example.com'
+      - '--provider=keycloak-oidc'
+      - '--client-id=gogs'
+      - '--client-secret=somestring'
+      - '--redirect-url=https://gogs.example.com/oauth2/callback'
+      - '--oidc-issuer-url=https://keycloak.example.com/auth/realms/PVE01'
+      - '--trusted-ip=192.168.50.0/24'
+      - '--custom-sign-in-logo=https://owncloud.example.com/apps/theming/image/logo?v=25'
+    ports:
+      - "8085:4180"     # The HTTP port
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=false

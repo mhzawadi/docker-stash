@@ -6,24 +6,25 @@ version: '3.5'
 
 # volumes:
 
-configs:
-  config.inc.php:
-    external: true
-
 services:
   phpmyadmin:
     image: mhzawadi/phpmyadmin:dev
     volumes:
-      - config.inc.php:/etc/phpmyadmin/config.user.inc.php
+      - /mnt/data/config.inc.php:/etc/phpmyadmin/config.user.inc.php
     environment:
       - HOST_URL=mysql.example.com
     deploy:
       replicas: 1
-      placement:
-        constraints: [node.role == worker]
       restart_policy:
         condition: on-failure
+      placement:
+        constraints: [node.role == worker]
       labels:
         - "traefik.http.routers.mysql.rule=Host(`mysql.example.com`)"
         - "traefik.http.routers.mysql.service=mysql"
         - "traefik.http.services.mysql.loadbalancer.server.port=80"
+        - "traefik.http.middlewares.mysql.headers.SSLProxyHeaders.proto=X-Forwarded-Proto:https"
+        - "traefik.http.middlewares.mysql.headers.customrequestheaders.x-forwarded-proto=https"
+        - "traefik.http.middlewares.mysql.headers.customrequestheaders.x-forwarded-port=443"
+        - "traefik.http.middlewares.mysql.headers.customrequestheaders.http-x-secure-request=true"
+        - "traefik.http.routers.mysql.middlewares=mysql"

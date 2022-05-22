@@ -9,19 +9,17 @@ volumes:
 
 services:
   gogs:
-    image: gogs/gogs-rpi
-    networks:
-      - proxy_gogs
+    image: gogs/gogs
     ports:
       - "2250:22"
     volumes:
       - gogs_data:/data
     deploy:
       replicas: 1
-      placement:
-        constraints: [node.role == worker]
       restart_policy:
         condition: on-failure
+      placement:
+        constraints: [node.role == worker]
       labels:
         - "traefik.docker.network=proxy_gogs"
         - "traefik.http.routers.gogo.rule=Host(`gogs.example.com`)"

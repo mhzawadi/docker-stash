@@ -1,0 +1,37 @@
+version: '3.5'
+
+# docker stack deploy --compose-file stack-picocms.yml picocms
+
+# networks:
+
+volumes:
+  picocms_config:
+  picocms_content:
+  picocms_plugins:
+  picocms_themes:
+  picocms_assets:
+
+services:
+  picocms:
+    image: mhzawadi/picocms:dev
+    volumes:
+      - picocms_assets:/var/www/html/assets
+      - picocms_config:/var/www/html/config
+      - picocms_content:/var/www/html/content
+      - picocms_plugins:/var/www/html/plugins
+      - picocms_themes:/var/www/html/themes
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.role == worker]
+      labels:
+        - "traefik.docker.network=proxy_picocms"
+        - "traefik.http.routers.picocms.rule=Host(`example.com`) || Host(`pico.example.com`)"
+        - "traefik.http.routers.picocms.service=picocms"
+        - "traefik.http.services.picocms.loadbalancer.server.port=80"
+        - "traefik.http.routers.picocms.middlewares=picocms"
+        - "traefik.http.middlewares.picocms.headers.customRequestHeaders.X-Forwarded-Proto=https"
+        - "traefik.http.middlewares.picocms.headers.customRequestHeaders.X-Forwarded-Port=443"
+        - "traefik.http.middlewares.picocms.headers.customRequestHeaders.X-Forwarded-Host=pico.example.com"

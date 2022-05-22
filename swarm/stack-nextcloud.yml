@@ -1,11 +1,11 @@
 version: '3.5'
 
-# docker stack deploy --compose-file stack-gogs.yml gogs;curl https://portainer.example.com/api/webhooks/59f48ae2-8be0-4d91-ae65-3926c129bb29
+# docker stack deploy --compose-file stack-nextcloud.yml nextcloud
 
 # networks:
 
 configs:
-  config.php:
+  nextcloud_config.php:
     external: true
 
 volumes:
@@ -17,6 +17,13 @@ services:
     ports:
       - "6379:6379"
     deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 50M
+        reservations:
+          cpus: '0.25'
+          memory: 20M
       mode: replicated
       replicas: 1
       placement:
@@ -28,14 +35,18 @@ services:
     ports:
       - "7867:7867"
     deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints: [node.role == worker]
+      mode: global
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 30M
+        reservations:
+          cpus: '0.25'
+          memory: 10M
       labels:
         - traefik.enable=false
     configs:
-      - source: config.php
+      - source: nextcloud_config.php
         target: /etc/nc_config.php
         uid: "0"
         gid: "0"

@@ -21,7 +21,7 @@ services:
       - SMTP_PORT=25
       - SMTP_SSL=false
       - SMTP_FROM=bitwarden@example.com
-      - ADMIN_TOKEN=GZTL4MO9maYcSsgbfuPwOz3xdpUjcbSJbTxDRxntTWiW60xpWyBuuqoHMDCKAeC4
+      - ADMIN_TOKEN=this-should-be-very-secure
 #     - DATABASE_URL=mysql://bitwarden:KX84fBJCTIp3lAHY@127.0.0.1:3306/bitwarden
 #     - ENABLE_DB_WAL=false
     labels:
@@ -30,7 +30,7 @@ services:
       - "traefik.http.routers.bit.service=bit"
       - "traefik.http.services.bit.loadbalancer.server.port=80"
   smtp:
-    image: mhzawadi/postfix:3.6.1.0
+    image: mhzawadi/postfix
     restart: unless-stopped
     labels:
       - traefik.enable=false

@@ -1,0 +1,35 @@
+version: '3.5'
+
+# docker stack deploy --compose-file stack-flame.yml flame
+
+# networks:
+
+secrets:
+  flame_password:
+    external: true
+
+volumes:
+  flame_data:
+
+services:
+  flame:
+    image: mhzawadi/flame
+    volumes:
+      - flame_data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    secrets:
+      - flame_password
+    environment:
+      - PASSWORD=somestring
+      - PASSWORD_FILE=/run/secrets/flame_password
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.docker.network=proxy_flame"
+        - "traefik.http.routers.flame.rule=Host(`flame.example.com`)"
+        - "traefik.http.routers.flame.service=flame"
+        - "traefik.http.services.flame.loadbalancer.server.port=5005"
