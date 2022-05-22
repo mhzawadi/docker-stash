@@ -76,5 +76,5 @@ services:
       labels:
         - traefik.enable=false
     environment:
-      - POSTFIX_DOMAIN=horwood.biz
+      - POSTFIX_DOMAIN=example.com
       - POSTFIX_RELAYHOST=[smtp-relay.gmail.com]:25

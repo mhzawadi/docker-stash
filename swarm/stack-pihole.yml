@@ -2,9 +2,7 @@ version: '3.5'
 
 # docker stack deploy --compose-file stack-pihole.yml pihole
 
-networks:
-  proxy_pihole:
-    external: true
+# networks:
 
 volumes:
   pihole:
@@ -46,8 +44,6 @@ services:
         - "traefik.http.services.pihole.loadbalancer.server.port=80"
   pihole_slave:
     image: pihole/pihole:latest
-    networks:
-      - proxy_pihole
     ports:
       - "53:53/tcp"
       - "53:53/udp"
