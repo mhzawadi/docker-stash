@@ -1,0 +1,18 @@
+version: "2"
+
+services:
+  foxess-mqtt:
+    image: mhzawadi/foxess-mqtt:dev-php
+    container_name: foxess-mqtt
+    volumes:
+      - foxess_data:/foxess-mqtt/data
+    environment:
+      - TIMEZONE=Europe/London
+
+volumes:
+  foxess_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/lv_data/docker/foxess_data'

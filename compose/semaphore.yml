@@ -1,0 +1,68 @@
+---
+version: '3.5'
+
+volumes:
+  semaphore_mysql:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/data/docker/semaphore/mysql'
+  semaphore_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/data/docker/semaphore/config'
+  semaphore_tmp:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/data/docker/semaphore/tmp'
+
+services:
+  mysql:
+    image: mysql:8.0
+    hostname: mysql
+    volumes:
+      - semaphore_mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=<PASSWORD>
+      - MYSQL_DATABASE=semaphore
+      - MYSQL_USER=semaphore
+      - MYSQL_PASSWORD=<PASSWORD>
+    restart: unless-stopped
+    ports:
+      - 3306:3306
+  semaphore:
+    container_name: ansiblesemaphore
+    image: semaphoreui/semaphore:v2.8.90
+    user: "1001:100"
+    ports:
+      - 3000:3000
+    environment:
+      - SEMAPHORE_DB_USER=semaphore
+      - SEMAPHORE_DB_PASS=<PASSWORD>
+      - SEMAPHORE_DB_HOST=mysql
+      - SEMAPHORE_DB_PORT=3306
+      - SEMAPHORE_DB_DIALECT=mysql
+      - SEMAPHORE_DB=semaphore
+      - SEMAPHORE_PLAYBOOK_PATH=/tmp/semaphore/
+      - SEMAPHORE_ADMIN_PASSWORD=<PASSWORD>
+      - SEMAPHORE_ADMIN_NAME=admin
+      - SEMAPHORE_ADMIN_EMAIL=email@example.com
+      - SEMAPHORE_ADMIN=admin
+      - SEMAPHORE_ACCESS_KEY_ENCRYPTION=<PASSWORD>
+      - ANSIBLE_HOST_KEY_CHECKING=false  # (optional) change to true if you want to enable host key checking
+    volumes:
+      - semaphore_config:/etc/semaphore
+      - semaphore_tmp:/tmp/semaphore
+      - /mnt/data/docker/semaphore/config/ansible.cfg:/home/semaphore/.ansible.cfg
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    labels:
+        - "traefik.http.routers.semaphore.rule=Host(`semaphore.example.com`)"
+        - "traefik.http.routers.semaphore.service=semaphore"
+        - "traefik.http.services.semaphore.loadbalancer.server.port=3000"

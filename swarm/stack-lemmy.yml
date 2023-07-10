@@ -1,0 +1,146 @@
+version: "3.7"
+
+networks:
+  proxy_lemmy:
+    external: true
+
+volumes:
+  lemmy_pgsql:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/data/lemmy/pgsql'
+  lemmy_pgsql_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/data/lemmy/pgsql_config'
+  lemmy_pics:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/data/lemmy/pics'
+  lemmy_themes:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/data/lemmy/themes'
+
+configs:
+  lemmy_nginx:
+    external: true
+  lemmy_config:
+    external: true
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "50m"
+    max-file: "4"
+
+services:
+  proxy:
+    image: nginx:1-alpine
+    restart: always
+    logging: *default-logging
+    depends_on:
+      - pictrs
+      - lemmy-ui
+    configs:
+      - source: lemmy_nginx
+        target: /etc/nginx/nginx.conf
+        uid: "0"
+        gid: "0"
+        mode: 0444
+    networks:
+      - proxy_lemmy
+
+  lemmy:
+    image: dessalines/lemmy:0.18.0
+    hostname: lemmy
+    restart: always
+    logging: *default-logging
+    environment:
+      - RUST_LOG="warn"
+    depends_on:
+      - postgres
+      - pictrs
+    configs:
+      - source: lemmy_config
+        target: /config/config.hjson
+        uid: "0"
+        gid: "0"
+        mode: 0444
+    networks:
+      - proxy_lemmy
+
+  lemmy-ui:
+    image: dessalines/lemmy-ui:0.18.0
+    environment:
+      - LEMMY_UI_LEMMY_INTERNAL_HOST=lemmy:8536
+      - LEMMY_UI_LEMMY_EXTERNAL_HOST=https://lemmy.example.com
+      - LEMMY_UI_HTTPS=true
+    volumes:
+      - lemmy_themes:/app/extra_themes
+    depends_on:
+      - lemmy
+    restart: always
+    logging: *default-logging
+    networks:
+      - proxy_lemmy
+
+  pictrs:
+    image: asonix/pictrs:0.4.0-rc.7
+    # this needs to match the pictrs url in lemmy.hjson
+    hostname: pictrs
+    # we can set options to pictrs like this, here we set max. image size and forced format for conversion
+    # entrypoint: /sbin/tini -- /usr/local/bin/pict-rs -p /mnt -m 4 --image-format webp
+    environment:
+      - PICTRS_OPENTELEMETRY_URL=http://otel:4137
+      - PICTRS__API_KEY=<PASSWORD>
+      - RUST_LOG=debug
+      - RUST_BACKTRACE=full
+      - PICTRS__MEDIA__VIDEO_CODEC=vp9
+      - PICTRS__MEDIA__GIF__MAX_WIDTH=256
+      - PICTRS__MEDIA__GIF__MAX_HEIGHT=256
+      - PICTRS__MEDIA__GIF__MAX_AREA=65536
+      - PICTRS__MEDIA__GIF__MAX_FRAME_COUNT=400
+    user: 991:991
+    volumes:
+      - lemmy_pics:/mnt:Z
+    restart: always
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          memory: 690m
+    networks:
+      - proxy_lemmy
+
+  postgres:
+    image: postgres:15-alpine
+    hostname: postgres
+    environment:
+      - POSTGRES_USER=lemmy
+      - POSTGRES_PASSWORD=<PASSWORD>
+      - POSTGRES_DB=lemmy
+    volumes:
+      - lemmy_pgsql:/var/lib/postgresql/data:Z
+      - lemmy_pgsql_config:/etc/postgresql
+    restart: always
+    logging: *default-logging
+    networks:
+      - proxy_lemmy
+
+  postfix:
+    image: mwader/postfix-relay
+    environment:
+      - POSTFIX_myhostname=example.com
+    restart: "always"
+    logging: *default-logging
+    networks:
+      - proxy_lemmy
