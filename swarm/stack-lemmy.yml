@@ -56,6 +56,12 @@ services:
         mode: 0444
     networks:
       - proxy_lemmy
+    deploy:
+      labels:
+        - "traefik.docker.network=proxy_lemmy"
+        - "traefik.http.routers.lemmy.rule=Host(`lemmy.example.com`)"
+        - "traefik.http.routers.lemmy.service=lemmy"
+        - "traefik.http.services.lemmy.loadbalancer.server.port=8536"
 
   lemmy:
     image: dessalines/lemmy:0.18.0
