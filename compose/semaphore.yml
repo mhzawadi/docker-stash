@@ -37,7 +37,7 @@ services:
       - 3306:3306
   semaphore:
     container_name: ansiblesemaphore
-    image: semaphoreui/semaphore:v2.8.90
+    image: semaphoreui/semaphore:v2.10.22
     user: "1001:100"
     ports:
       - 3000:3000
@@ -66,3 +66,12 @@ services:
         - "traefik.http.routers.semaphore.rule=Host(`semaphore.example.com`)"
         - "traefik.http.routers.semaphore.service=semaphore"
         - "traefik.http.services.semaphore.loadbalancer.server.port=3000"
+  semaphore-runner:
+    container_name: semaphorerunner
+    image: semaphoreui/runner:v2.10.22
+    volumes:
+      - semaphore_runner:/etc/semaphore
+    restart: unless-stopped
+    depends_on:
+      - semaphore
+      
