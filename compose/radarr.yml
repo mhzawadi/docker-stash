@@ -1,4 +1,4 @@
-version: '2'
+---
 services:
   radarr:
     image: hotio/radarr
@@ -7,11 +7,12 @@ services:
     volumes:
       - radarr_config:/config
       - radarr_movies:/movies
+      - radarr_movies_kids:/kids_movies
       - radarr_torrents:/data
     ports:
       - "7878:7878"
     environment:
-      - PUID=1001
+      - PUID=1000
       - PGID=100
       - TZ=Europe/London
       - UMASK_SET=022 #optional
@@ -22,29 +23,28 @@ services:
     volumes:
       - sonarr_config:/config
       - sonarr_tvshows:/tvshows
+      - sonarr_tvshows_kids:/tvshows_kids
       - radarr_torrents:/data
     ports:
       - "8989:8989"
     environment:
-      - PUID=1001
+      - PUID=1000
       - PGID=100
       - TZ=Europe/London
       - UMASK_SET=022 #optional
-  jackett:
-    image: ghcr.io/linuxserver/jackett
-    container_name: jackett
+  prowlarr:
+    image: hotio/prowlarr
+    container_name: prowlarr
+    restart: always
+    volumes:
+      - prowlarr_config:/config
+    ports:
+      - "9696:9696"
     environment:
       - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Paris
-      - AUTO_UPDATE=true #optional
-      - RUN_OPTS=<run options here> #optional
-    volumes:
-      - jackett_config:/config
-      - jackett_downloads:/downloads
-    ports:
-      - 9117:9117
-    restart: unless-stopped
+      - PGID=100
+      - TZ=Europe/London
+      - UMASK_SET=022 #optional
   qbittorrent:
     image: gists/qbittorrent
     container_name: qbittorrent
@@ -55,7 +55,7 @@ services:
     volumes:
       - radarr_torrents:/data
     environment:
-      - UID=1001
+      - UID=1000
       - WEB_PORT=8081
     restart: always
   flaresolverr:
@@ -71,13 +71,19 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: '/var/music/movies'
+      device: '/mnt/media/movies'
+  radarr_movies_kids:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/media/kids_movies'
   radarr_torrents:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: '/var/music/torrents'
+      device: '/mnt/lv_data/data/torrents'
   radarr_config:
     driver: local
     driver_opts:
@@ -90,27 +96,39 @@ volumes:
       type: none
       o: bind
       device: '/mnt/lv_data/docker/radarr/downloads'
-  jackett_config:
+  prowlarr_config:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: '/mnt/lv_data/docker/jackett/config'
-  jackett_downloads:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: '/mnt/lv_data/docker/jackett/downloads'
+      device: '/mnt/lv_data/docker/prowlarr/config'
   sonarr_tvshows:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: '/var/music/tv_shows'
+      device: '/mnt/media/tv_shows'
+  sonarr_tvshows_kids:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/media/kids_tv_shows'
   sonarr_config:
     driver: local
     driver_opts:
       type: none
       o: bind
       device: '/mnt/lv_data/docker/sonarr/config'
+  lidarr_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/lv_data/docker/lidarr/config'
+  lidarr_music:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/media/main'

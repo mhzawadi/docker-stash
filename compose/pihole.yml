@@ -1,0 +1,37 @@
+---
+volumes:
+  pihole01:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/mnt/data/docker/pihole01'
+  dnsmasq:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/mnt/data/docker/dnsmasq'
+services:
+  pihole01:
+    image: pihole/pihole:latest
+    container_name: pihole01
+    ports:
+      - "8180:80/tcp"
+      - "192.168.49.156:53:53/tcp"
+      - "192.168.49.156:53:53/udp"
+      - "192.168.49.156:67:67/udp"
+    environment:
+      TZ: 'Europe/London'
+      WEBPASSWORD: 'yAYru8qR'
+    volumes:
+       - pihole01:/etc/pihole/
+       - dnsmasq:/etc/dnsmasq.d/
+    dns:
+      - '127.0.0.1'
+      - '192.168.49.254'
+    restart: unless-stopped
+    labels:
+        - "traefik.http.routers.pihole_primary.rule=Host(`dns01.example.com`)"
+        - "traefik.http.routers.pihole_primary.service=pihole_primary"
+        - "traefik.http.services.pihole_primary.loadbalancer.server.port=80"

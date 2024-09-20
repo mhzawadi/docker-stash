@@ -1,10 +1,10 @@
-version: '2'
+---
 services:
   unifi:
-    image: ryansch/unifi-rpi:6.2
+    image: ryansch/unifi-rpi:8.4.59
     container_name: unifi
     restart: always
-    # network_mode: host
+    network_mode: host
     # Uncomment the following to set java options
     # environment:
     #   JAVA_OPTS: -Xmx512M
@@ -29,34 +29,34 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: '/mnt/lv_data/docker/unifi/config'
+      device: '/mnt/data/docker/unifi/config'
   unifi_log:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: '/mnt/lv_data/docker/unifi/log'
+      device: '/mnt/data/docker/unifi/log'
   unifi_log2:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: '/mnt/lv_data/docker/unifi/log2'
+      device: '/mnt/data/docker/unifi/log2'
   unifi_run:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: '/mnt/lv_data/docker/unifi/run'
+      device: '/mnt/data/docker/unifi/run'
   unifi_run2:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: '/mnt/lv_data/docker/unifi/run2'
+      device: '/mnt/data/docker/unifi/run2'
   unifi_work:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: '/mnt/lv_data/docker/unifi/work'
+      device: '/mnt/data/docker/unifi/work'
