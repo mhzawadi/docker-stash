@@ -5,7 +5,7 @@
 host: 0.0.0.0
 port: 9091
 log_level: info
-jwt_secret: 4EC1DD9BFF850EA2E259D246257FDF772187F741
+jwt_secret: THISISAJWTSECRETKEY
 
 server:
   read_buffer_size: 4096
@@ -19,8 +19,8 @@ totp:
 
 duo_api:
   hostname: api-0ab4cd08.duosecurity.com
-  integration_key: DI4B6H08GA7TP3NCK14S
-  secret_key: CGTtRpuQgnCGIhvutah3TjQxUpn4higIlolKFFds
+  integration_key: THISISAKEY
+  secret_key: THISISASECRETKEY
 
 authentication_backend:
   disable_reset_password: false
@@ -63,7 +63,7 @@ access_control:
 
 session:
   name: authelia_session
-  secret: 6C8BCD881E4CB3FF768D88BB191D0F2156E351AD
+  secret: THISISASECRETKEY
   expiration: 1h
   inactivity: 5m
   domain: example.com

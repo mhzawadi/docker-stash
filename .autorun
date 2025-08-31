@@ -12,6 +12,7 @@ elif [ -z "$VIRTUAL_ENV" ]
 then
   echo -e "\x1b[0;33m  Missing that environment, starting it now...\x1b[0m"
   source .venv/bin/activate
+  pre-commit autoupdate
   echo -e "\x1b[1;35m  Downloading updates to the repo sir...\x1b[0m"
 fi
 
