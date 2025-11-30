@@ -1,6 +1,6 @@
 version: '3.5'
 
-# docker-compose -p portainer -f portainer.yml
+# docker compose-p portainer -f portainer.yml
 
 services:
   portainer:

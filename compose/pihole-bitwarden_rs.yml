@@ -1,7 +1,7 @@
 # docker-compose.yml
 version: '3'
 
-# docker-compose -p bitwarden -f pihole-bitwarden_rs.yml
+# docker compose-p bitwarden -f pihole-bitwarden_rs.yml
 
 volumes:
   pihole:
