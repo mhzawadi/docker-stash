@@ -1,0 +1,35 @@
+---
+
+# docker stack deploy --compose-file stack-nextcloud-thpb.yml nextcloud
+
+networks:
+  proxy_nextcloud:
+    external: true
+
+services:
+  signaling:
+    image: ghcr.io/nextcloud-releases/aio-talk:latest
+    networks:
+      - proxy_nextcloud
+    deploy:
+      update_config:
+        order: start-first
+      mode: replicated
+      replicas: 1
+      labels:
+        - "dashboard.name=NC signaling"
+        - "dashboard.icon=si:nextcloud"
+        - "traefik.http.routers.signaling.rule=Host(`signaling.example.com`)"
+        - "traefik.http.routers.signaling.service=signaling"
+        - "traefik.http.services.signaling.loadbalancer.server.port=8081"
+        - "traefik.http.middlewares.signaling.headers.SSLProxyHeaders.proto=X-Forwarded-Proto:https"
+        - "traefik.http.middlewares.signaling.headers.customrequestheaders.x-forwarded-proto=https"
+        - "traefik.http.middlewares.signaling.headers.customrequestheaders.x-forwarded-port=443"
+        - "traefik.http.middlewares.signaling.headers.customrequestheaders.http-x-secure-request=true"
+        - "traefik.http.routers.signaling.middlewares=signaling"
+    environment:
+      - NC_DOMAIN=example.com
+      - TALK_PORT=3478
+      - TURN_SECRET=821975380fd039cecf13ccbdb33a5df8c02911272bb456aa2288777ab1788aa1
+      - SIGNALING_SECRET=bba5548f0791c91289195df34209be196833c1b118bb562d47de64cfc5f40f89
+      - INTERNAL_SECRET=e7307fcce01236ac61474b36e50c4b6fab5e642f9caef14a4a5ffd204b6e4de0
