@@ -1,5 +1,4 @@
 ---
-version: '3.5'
 
 volumes:
   semaphore_mysql:
@@ -7,71 +6,81 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: '/mnt/data/docker/semaphore/mysql'
+      device: '/var/docker/semaphore/mysql'
   semaphore_config:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: '/mnt/data/docker/semaphore/config'
-  semaphore_tmp:
+      device: '/var/docker/semaphore/config'
+  semaphore_runner:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: '/mnt/data/docker/semaphore/tmp'
+      device: '/var/docker/semaphore/runner'
+  semaphore_backups:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/mnt/backups/dbs/'
 
 services:
   mysql:
-    image: mysql:8.0
+    image: mysql:8.4
     hostname: mysql
     volumes:
       - semaphore_mysql:/var/lib/mysql
+      - semaphore_backups:/mnt/mysql_data/backups/
     environment:
-      - MYSQL_ROOT_PASSWORD=<PASSWORD>
+      - MYSQL_ROOT_PASSWORD=ASecurePasswordForRoot
       - MYSQL_DATABASE=semaphore
       - MYSQL_USER=semaphore
-      - MYSQL_PASSWORD=<PASSWORD>
+      - MYSQL_PASSWORD=ASecurePasswordForSemaphore
     restart: unless-stopped
+    networks:
+      - ip6net
     ports:
       - 3306:3306
+    labels:
+      - "traefik.enable=false"
   semaphore:
     container_name: ansiblesemaphore
-    image: semaphoreui/semaphore:v2.10.22
-    user: "1001:100"
+    image: semaphoreui/semaphore:v2.19.8
+    networks:
+      - ip6net
     ports:
       - 3000:3000
     environment:
       - SEMAPHORE_DB_USER=semaphore
-      - SEMAPHORE_DB_PASS=<PASSWORD>
+      - SEMAPHORE_DB_PASS=ASecurePasswordForSemaphore
       - SEMAPHORE_DB_HOST=mysql
       - SEMAPHORE_DB_PORT=3306
       - SEMAPHORE_DB_DIALECT=mysql
       - SEMAPHORE_DB=semaphore
       - SEMAPHORE_PLAYBOOK_PATH=/tmp/semaphore/
-      - SEMAPHORE_ADMIN_PASSWORD=<PASSWORD>
+      - SEMAPHORE_ADMIN_PASSWORD=ASecureSemaphorePassword
       - SEMAPHORE_ADMIN_NAME=admin
       - SEMAPHORE_ADMIN_EMAIL=email@example.com
       - SEMAPHORE_ADMIN=admin
-      - SEMAPHORE_ACCESS_KEY_ENCRYPTION=<PASSWORD>
+      - SEMAPHORE_ACCESS_KEY_ENCRYPTION= # Make this with openssl rand -base64 32
+      - SEMAPHORE_SCHEDULE_TIMEZONE=Europe/London
       - ANSIBLE_HOST_KEY_CHECKING=false  # (optional) change to true if you want to enable host key checking
     volumes:
       - semaphore_config:/etc/semaphore
-      - semaphore_tmp:/tmp/semaphore
-      - /mnt/data/docker/semaphore/config/ansible.cfg:/home/semaphore/.ansible.cfg
     restart: unless-stopped
     depends_on:
       - mysql
-    labels:
-        - "traefik.http.routers.semaphore.rule=Host(`semaphore.example.com`)"
-        - "traefik.http.routers.semaphore.service=semaphore"
-        - "traefik.http.services.semaphore.loadbalancer.server.port=3000"
   semaphore-runner:
     container_name: semaphorerunner
-    image: semaphoreui/runner:v2.10.22
-    volumes:
-      - semaphore_runner:/etc/semaphore
+    image: semaphoreui/runner:v2.19.8
     restart: unless-stopped
+    networks:
+      - ip6net
     depends_on:
       - semaphore
-      
+    environment:
+      - SEMAPHORE_WEB_ROOT=https://semaphore.example.com
+      - SEMAPHORE_RUNNER_TOKEN= # use the new runner setup
+      - SEMAPHORE_SCHEDULE_TIMEZONE=Europe/London
